@@ -1,0 +1,12 @@
+language: scala
+scala:
+- 2.10.5
+- 2.11.7
+# script:
+# - sbt clean coverage test
+# - sbt coveralls
+script: sbt coveralls
+notifications:
+  email:
+    on_success: always
+    on_failure: always
