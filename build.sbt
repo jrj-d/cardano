@@ -1,10 +1,8 @@
-name := "cardana"
+name := "cardano"
 
 version := "0.1-SNAPSHOT"
 
 scalaVersion := "2.11.7"
- 
-resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 resolvers ++= Seq(
             "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
