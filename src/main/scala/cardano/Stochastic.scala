@@ -35,14 +35,14 @@ class StochasticGenerator(randomGenerator: RandomGenerator) {
 
   }
 
-  def coin(p: Prob = 0.5): Stochastic[Int] = choose(Seq((0, 1 - p), (1, p)))
+  def fromMass(mass: Iterable[Prob]) = choose(mass.zipWithIndex.map{case (p, v) => (v, p)})
 
   def uniform(n: Int): Stochastic[Int] = {
     val p = 1.0 / n
-    choose((0 until n).map((_, p)))
+    fromMass(Seq.fill(n)(p))
   }
 
-  def fromMass(mass: Iterable[Prob]) = choose(mass.zipWithIndex.map{case (p, v) => (v, p)})
+  def coin(p: Prob = 0.5): Stochastic[Int] = fromMass(Seq(1 - p, p))
 
 }
 
