@@ -1,5 +1,7 @@
 package object cardano {
 
+  private[cardano] val defaultNbSamples: Int = 1000
+
   type Prob = Double
   type Dist[+A] = Iterable[(A, Double)]
 

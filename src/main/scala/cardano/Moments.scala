@@ -1,13 +1,13 @@
 package cardano
 
 trait Moments[@specialized(Double, Int) +A] {
-  def logExpectation(samples: Int = 1000): Double
+  def logExpectation(samples: Int = defaultNbSamples): Double
 
-  def expectation(samples: Int = 1000): Double
+  def expectation(samples: Int = defaultNbSamples): Double
 
-  def variance(samples: Int = 1000): Double
+  def variance(samples: Int = defaultNbSamples): Double
 
-  def std(samples: Int = 1000): Double = math.sqrt(variance(samples))
+  def std(samples: Int = defaultNbSamples): Double = math.sqrt(variance(samples))
 }
 
 class NumericMoments[+A](stochastic: Stochastic[A])(implicit numeric: Numeric[A]) extends Moments[A] {
@@ -18,18 +18,18 @@ class NumericMoments[+A](stochastic: Stochastic[A])(implicit numeric: Numeric[A]
     max + math.log(1 + math.exp(min - max))
   }
 
-  def logExpectation(samples: Int = 1000): Double = {
+  def logExpectation(samples: Int = defaultNbSamples): Double = {
     val logSum: Double = Stream.fill(samples)(stochastic.sample).foldLeft(Double.NegativeInfinity) { (logSum, sample) =>
       addLogNumbers(logSum, math.log(numeric.toDouble(sample)))
     }
     logSum - math.log(samples)
   }
 
-  def expectation(samples: Int = 1000): Double = {
+  def expectation(samples: Int = defaultNbSamples): Double = {
     numeric.toDouble(Stream.fill(samples)(stochastic.sample).sum) / samples.toDouble
   }
 
-  def variance(samples: Int = 1000): Double = {
+  def variance(samples: Int = defaultNbSamples): Double = {
     val mean: Double = expectation(samples)
     val squaredCenteredRV: Stochastic[Double] = stochastic.map { v =>
       val vDouble: Double = numeric.toDouble(v)
@@ -48,18 +48,18 @@ class DoubleMoments(stochastic: Stochastic[Double]) extends Moments[Double] {
     max + math.log(1 + math.exp(min - max))
   }
 
-  def logExpectation(samples: Int = 1000): Double = {
+  def logExpectation(samples: Int = defaultNbSamples): Double = {
     val logSum: Double = Stream.fill(samples)(stochastic.sample).foldLeft(Double.NegativeInfinity) { (logSum, sample) =>
       addLogNumbers(logSum, math.log(sample))
     }
     logSum - math.log(samples)
   }
 
-  def expectation(samples: Int = 1000): Double = {
+  def expectation(samples: Int = defaultNbSamples): Double = {
     Stream.fill(samples)(stochastic.sample).reduceLeft(_ + _) / samples.toDouble
   }
 
-  def variance(samples: Int = 1000): Double = {
+  def variance(samples: Int = defaultNbSamples): Double = {
     val mean: Double = expectation(samples)
     val squaredCenteredRV: Stochastic[Double] = stochastic.map { v => (v - mean) * (v - mean) }
     squaredCenteredRV.expectation(samples)
@@ -75,18 +75,18 @@ class IntMoments(stochastic: Stochastic[Int]) extends Moments[Int] {
     max + math.log(1 + math.exp(min - max))
   }
 
-  def logExpectation(samples: Int = 1000): Double = {
+  def logExpectation(samples: Int = defaultNbSamples): Double = {
     val logSum: Double = Stream.fill(samples)(stochastic.sample).foldLeft(Double.NegativeInfinity) { (logSum, sample) =>
       addLogNumbers(logSum, math.log(sample))
     }
     logSum - math.log(samples)
   }
 
-  def expectation(samples: Int = 1000): Double = {
+  def expectation(samples: Int = defaultNbSamples): Double = {
     Stream.fill(samples)(stochastic.sample).reduceLeft(_ + _) / samples.toDouble
   }
 
-  def variance(samples: Int = 1000): Double = {
+  def variance(samples: Int = defaultNbSamples): Double = {
     val mean: Double = expectation(samples)
     val squaredCenteredRV: Stochastic[Double] = stochastic.map { v => (v - mean) * (v - mean) }
     squaredCenteredRV.expectation(samples)

@@ -27,3 +27,25 @@ initialCommands in console :=
     |
     |import cardano._
   """.stripMargin
+
+// scalastyle for main code
+
+lazy val compileScalaStyle = taskKey[Unit]("compileScalaStyle")
+
+compileScalaStyle := {
+  org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).toTask("").value
+}
+
+(compile in Compile) <<= (compile in Compile) dependsOn compileScalaStyle
+
+// scalastyle for tests
+
+(scalastyleConfig in Test) := baseDirectory.value / "scalastyle-test-config.xml"
+
+lazy val testScalaStyle = taskKey[Unit]("testScalaStyle")
+
+testScalaStyle := {
+  org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Test).toTask("").value
+}
+
+(test in Test) <<= (test in Test) dependsOn testScalaStyle
