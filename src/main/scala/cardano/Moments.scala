@@ -15,7 +15,9 @@ class Moments[+A](stochastic: Stochastic[A])(implicit numeric: Numeric[A]) {
     logSum - math.log(samples)
   }
 
-  def expectation(samples: Int = 1000): Double = math.exp(logExpectation(samples))
+  def expectation(samples: Int = 1000): Double = {
+    numeric.toDouble(Stream.fill(samples)(stochastic.sample).sum) / samples.toDouble
+  }
 
   def variance(samples: Int = 1000): Double = {
     val mean: Double = expectation(samples)

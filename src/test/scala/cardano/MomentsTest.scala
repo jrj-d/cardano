@@ -11,9 +11,11 @@ class MomentsTest extends FlatSpec with Matchers {
     val die: Stochastic[Int] = generator.uniform(6).map(_ + 1)
     for(i <- 0 to 100) {
       die.expectation(10000) should be (3.5 +- 0.1)
+      math.exp(die.logExpectation(10000)) should be (3.5 +- 0.1)
     }
     for(i <- 0 to 100) {
       die.expectation(100000) should be (3.5 +- 0.05)
+      math.exp(die.logExpectation(100000)) should be (3.5 +- 0.05)
     }
   }
 
