@@ -3,11 +3,10 @@ package cardano.distributions
 import breeze.linalg.{DenseVector, QuasiTensor}
 import breeze.stats.distributions.{Multinomial, RandBasis, ThreadLocalRandomGenerator}
 import cardano._
-import org.apache.commons.math3.random.RandomGenerator
 
 import scala.collection.immutable.IndexedSeq
 
-class DiscreteDistributions(randomGenerator: RandomGenerator) {
+trait DiscreteDistributions extends Distributions {
 
   def choose[A](distribution: Dist[A])(
     implicit ev: DenseVector[Double] => QuasiTensor[Int, Double],

@@ -1,12 +1,12 @@
 package cardano
 
-import cardano.distributions.DiscreteDistributions
+import cardano.distributions.AllDistributions
 import org.apache.commons.math3.random.MersenneTwister
 import org.scalatest._
 
-class MomentsTest extends FlatSpec with Matchers {
+class DiscreteDistributionsTest extends FlatSpec with Matchers {
 
-  val generator = new DiscreteDistributions(new MersenneTwister(0))
+  val generator = new AllDistributions(new MersenneTwister(0))
 
   "A die roll" should "have its expected value around 3.5 (int version)" in {
     val die: Stochastic[Int] = generator.uniform(6).map(_ + 1)
