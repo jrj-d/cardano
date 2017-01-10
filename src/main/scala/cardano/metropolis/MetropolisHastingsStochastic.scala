@@ -11,9 +11,9 @@ trait MetropolisHastingsStochastic[A] extends Stochastic[A] {
 
   def randomGenerator: RandomGenerator
 
-  def sampleBurnIn: Int
+  def sampleBurnIn: Int = defaultSampleBurnIn
 
-  def sampleInterval: Int
+  def sampleInterval: Int = defaultSampleInterval
 
   def initValue: A
 
@@ -56,7 +56,7 @@ trait MetropolisHastingsStochastic[A] extends Stochastic[A] {
 
 }
 
-trait SymmetricMetropolisHastingsStochastic[A] extends MetropolisHastingsStochastic[A] {
+trait MetropolisStochastic[A] extends MetropolisHastingsStochastic[A] {
 
   def transitionFunction(a: A): (A, Prob, Prob) = (symmetricTransitionFunction(a), 1.0, 1.0)
 
