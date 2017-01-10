@@ -1,4 +1,6 @@
-package cardano
+package cardano.moments
+
+import cardano._
 
 trait Moments[@specialized(Double, Int) +A] {
   def logExpectation(samples: Int = defaultNbSamples): Double

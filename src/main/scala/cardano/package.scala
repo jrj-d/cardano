@@ -1,6 +1,6 @@
-package object cardano {
+import cardano.moments.{DoubleMoments, IntMoments, Moments, NumericMoments}
 
-  private[cardano] val defaultNbSamples: Int = 1000
+package object cardano {
 
   type Prob = Double
   type Dist[+A] = Iterable[(A, Double)]
