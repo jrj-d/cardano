@@ -1,3 +1,5 @@
+import cardano.moments.{DoubleMoments, IntMoments, Moments, NumericMoments}
+
 package object cardano {
 
   private[cardano] val defaultNbSamples: Int = 1000

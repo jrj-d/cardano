@@ -1,5 +1,6 @@
 package cardano
 
+import cardano.metropolis.{MaximumEntropy, SymmetricMetropolisHastingsStochastic}
 import org.apache.commons.math3.random.MersenneTwister
 import org.scalatest._
 
