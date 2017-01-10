@@ -9,6 +9,8 @@ trait Stochastic[+A] {
 
   def flatMap[B](f: A => Stochastic[B]): Stochastic[B] = StochasticFlatMap(this, f)
 
+  def filter(f: A => Boolean): Stochastic[A] = StochasticFilter(this, f)
+
   def sample: A
 
   def randomGenerator: RandomGenerator
@@ -22,6 +24,11 @@ final case class StochasticMap[A, +B](stochastic: Stochastic[A], f: A => B) exte
 
 final case class StochasticFlatMap[A, +B](stochastic: Stochastic[A], f: A => Stochastic[B]) extends Stochastic[B] {
   def sample: B = f(stochastic.sample).sample
+  def randomGenerator: RandomGenerator = stochastic.randomGenerator
+}
+
+final case class StochasticFilter[A](stochastic: Stochastic[A], f: A => Boolean) extends Stochastic[A] {
+  def sample: A = Stream.continually(stochastic.sample).dropWhile(a => !f(a)).head
   def randomGenerator: RandomGenerator = stochastic.randomGenerator
 }
 
