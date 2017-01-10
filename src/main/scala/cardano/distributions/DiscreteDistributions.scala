@@ -1,22 +1,21 @@
 package cardano.distributions
 
-import breeze.linalg.{DenseVector, QuasiTensor}
-import breeze.stats.distributions.{Multinomial, RandBasis, ThreadLocalRandomGenerator}
 import cardano._
+import org.apache.commons.math3.random.RandomGenerator
 
 import scala.collection.immutable.IndexedSeq
 
 trait DiscreteDistributions extends Distributions {
 
-  def choose[A](distribution: Dist[A])(
-    implicit ev: DenseVector[Double] => QuasiTensor[Int, Double],
-    sumImpl: breeze.linalg.sum.Impl[DenseVector[Double], Double]): Stochastic[A] = new Stochastic[A] {
+  self =>
+
+  def choose[A](distribution: Dist[A]): Stochastic[A] = new Stochastic[A] {
 
     private lazy val values: IndexedSeq[A] = distribution.map(_._1).toIndexedSeq
-    private lazy val sampler: Multinomial[DenseVector[Prob], Int] = Multinomial(
-      DenseVector(distribution.map(_._2).toArray))(ev, sumImpl, new RandBasis(new ThreadLocalRandomGenerator(randomGenerator)))
 
-    def sample: A = values(sampler.sample(1).head)
+    def sample: A = values(randomGenerator.nextInt(values.length))
+
+    def randomGenerator: RandomGenerator = self.randomGenerator
 
   }
 
@@ -27,8 +26,8 @@ trait DiscreteDistributions extends Distributions {
     fromMass(Seq.fill(n)(p))
   }
 
-  def coin(p: Prob = 0.5): Stochastic[Int] = fromMass(Seq(1 - p, p))
+  def coin(p: Prob = 0.5): Stochastic[Boolean] = fromMass(Seq(1 - p, p)).map(_ == 1)
 
-  def coin: Stochastic[Int] = fromMass(Seq(0.5, 0.5))
+  def coin: Stochastic[Boolean] = coin()
 
 }

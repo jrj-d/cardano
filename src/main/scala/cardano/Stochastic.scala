@@ -1,7 +1,7 @@
 package cardano
 
 import cardano.distributions.AllDistributions
-import org.apache.commons.math3.random.MersenneTwister
+import org.apache.commons.math3.random.{MersenneTwister, RandomGenerator}
 
 trait Stochastic[+A] {
 
@@ -11,14 +11,18 @@ trait Stochastic[+A] {
 
   def sample: A
 
+  def randomGenerator: RandomGenerator
+
 }
 
 final case class StochasticMap[A, +B](stochastic: Stochastic[A], f: A => B) extends Stochastic[B] {
   def sample: B = f(stochastic.sample)
+  def randomGenerator: RandomGenerator = stochastic.randomGenerator
 }
 
 final case class StochasticFlatMap[A, +B](stochastic: Stochastic[A], f: A => Stochastic[B]) extends Stochastic[B] {
   def sample: B = f(stochastic.sample).sample
+  def randomGenerator: RandomGenerator = stochastic.randomGenerator
 }
 
 object Stochastic extends AllDistributions(new MersenneTwister())

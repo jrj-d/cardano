@@ -1,15 +1,23 @@
 package cardano.moments
 
-import cardano._
+import cardano.Stochastic
 
 trait Moments[@specialized(Double, Int) +A] {
   def logExpectation(samples: Int = defaultNbSamples): Double
 
+  def logExpectation: Double = logExpectation()
+
   def expectation(samples: Int = defaultNbSamples): Double
+
+  def expectation: Double = expectation()
 
   def variance(samples: Int = defaultNbSamples): Double
 
+  def variance: Double = variance()
+
   def std(samples: Int = defaultNbSamples): Double = math.sqrt(variance(samples))
+
+  def std: Double = std()
 }
 
 class NumericMoments[+A](stochastic: Stochastic[A])(implicit numeric: Numeric[A]) extends Moments[A] {

@@ -2,6 +2,6 @@ package cardano
 
 package object metropolis {
 
-  private[metropolis] val defaultSampleBurnIn: Int = 100
-  private[metropolis] val defaultSampleInterval: Int = 10
+  private[cardano] val defaultSampleBurnIn: Int = 100
+  private[cardano] val defaultSampleInterval: Int = 10
 }

@@ -2,12 +2,17 @@ package cardano.distributions
 
 import breeze.stats.distributions.{Beta, RandBasis, ThreadLocalRandomGenerator}
 import cardano._
+import org.apache.commons.math3.random.RandomGenerator
 
 trait ContinuousDistributions extends Distributions {
+
+  self =>
 
   def gaussian: Stochastic[Double] = new Stochastic[Double] {
 
     def sample: Double = randomGenerator.nextGaussian()
+
+    def randomGenerator: RandomGenerator = self.randomGenerator
 
   }
 
@@ -18,6 +23,8 @@ trait ContinuousDistributions extends Distributions {
     private val sampler = new Beta(a, b)(new RandBasis(new ThreadLocalRandomGenerator(randomGenerator)))
 
     def sample: Double = sampler.draw()
+
+    def randomGenerator: RandomGenerator = self.randomGenerator
 
   }
 
