@@ -1,8 +1,10 @@
 language: scala
 scala:
 - 2.11.8
-script: "sbt clean coverage test"
-after_success: "sbt coverageReport coveralls"
+script:
+  - sbt clean coverage test coverageReport
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 notifications:
   email:
     on_success: always

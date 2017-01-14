@@ -40,7 +40,7 @@ final case class StochasticHigherKind[F[_], A](stochastic: Stochastic[A], f: (=>
 
   /** This repeat feature could have been implemented using "map".
     * The only change is replacing `f: A => B` by `f: (=> A) => B`.
-    * This would have work:
+    * This would have worked:
     * {{{
     *   scala> val die = Stochastic.uniform(6).map(_ + 1)
     *   die: cardano.Stochastic[Int] = StochasticMap(cardano.distributions.DiscreteDistributions$$anon$1@fc1001b,<function1>)
@@ -64,7 +64,7 @@ final case class StochasticHigherKind[F[_], A](stochastic: Stochastic[A], f: (=>
     *        die.map(f)
     * }}}
     * Since it is not reasonable to ask the user to put `(=> A)` in all their signatures for something as basic as `map`,
-    * it is better to separate the two functionalities
+    * it is better to separate the two features
     */
 
   def sample: F[A] = f(stochastic.sample)
