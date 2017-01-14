@@ -6,4 +6,4 @@ trait Distributions {
   def randomGenerator: RandomGenerator
 }
 
-class AllDistributions(val randomGenerator: RandomGenerator) extends DiscreteDistributions with ContinuousDistributions
+class AllDistributions(val randomGenerator: RandomGenerator) extends DiscreteDistributions with ContinuousDistributions with MaximumEntropyDistributions

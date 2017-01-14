@@ -1,29 +1,21 @@
 package cardano
 
-import cardano.metropolis.{MaximumEntropy, MetropolisStochastic}
+import cardano.distributions.AllDistributions
 import org.apache.commons.math3.random.MersenneTwister
 import org.scalatest._
 
 class MetropolisHastingsTest extends FlatSpec with Matchers {
 
-  val generator = new MersenneTwister(0)
+  val generator = new AllDistributions(new MersenneTwister(0))
 
   def gaussianMH(mean: Double, std: Double): Stochastic[Double] = {
 
     val inverseTemp: Double = 0.5 / std / std
 
-    new MaximumEntropy[Double] with MetropolisStochastic[Double] {
-
-      override val inverseTemperature: Double = inverseTemp
-
-      override def initValue: Double = generator.nextDouble()
-
-      override def symmetricTransitionFunction(d: Double): Double = d + generator.nextDouble() - 0.5
-
-      override def costFunction(a: Double): Prob = (a - mean) * (a - mean)
-
-      override val randomGenerator = generator
+    generator.maxEnt(inverseTemp)(generator.randomGenerator.nextDouble)(a => (a - mean) * (a - mean)) {
+      d => d + generator.randomGenerator.nextDouble() - 0.5
     }
+
   }
 
   val rv: Stochastic[Double] = gaussianMH(3.0, 1.5)

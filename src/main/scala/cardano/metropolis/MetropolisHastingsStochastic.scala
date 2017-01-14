@@ -17,9 +17,9 @@ trait MetropolisHastingsStochastic[A] extends Stochastic[A] {
 
   def initValue: A
 
-  def transitionFunction(a: A): (A, Prob, Prob)
+  def logTransitionFunction(a: A): (A, Double, Double)
 
-  def unnormalizedProbabilityOf(a: A): Prob
+  def logUnnormalizedProbabilityOf(a: A): Double
 
   def sample: A = {
     (0 until (sampleInterval - 1)).foreach(i => sampleInternal)
@@ -38,15 +38,15 @@ trait MetropolisHastingsStochastic[A] extends Stochastic[A] {
   }
 
   private[this] def mhProcedure(lastValue: A): A = {
-    val (newValue, forwardProb, backwardProb) = transitionFunction(lastValue)
-    val probLast = unnormalizedProbabilityOf(lastValue)
-    val probNew = unnormalizedProbabilityOf(newValue)
-    val acceptanceProb = probNew * backwardProb / probLast / forwardProb
-    if(acceptanceProb >= 1.0) {
+    val (newValue, forwardProbLog, backwardProbLog) = logTransitionFunction(lastValue)
+    val probLastLog = logUnnormalizedProbabilityOf(lastValue)
+    val probNewLog = logUnnormalizedProbabilityOf(newValue)
+    val acceptanceProbLog = probNewLog + backwardProbLog - probLastLog - forwardProbLog
+    if(acceptanceProbLog >= 0.0) {
       newValue
     } else {
-      val uniform = randomGenerator.nextDouble()
-      if (uniform <= acceptanceProb) {
+      val uniform = math.log(randomGenerator.nextDouble())
+      if (uniform <= acceptanceProbLog) {
         newValue
       } else {
         lastValue
@@ -56,19 +56,11 @@ trait MetropolisHastingsStochastic[A] extends Stochastic[A] {
 
 }
 
-trait MetropolisStochastic[A] extends MetropolisHastingsStochastic[A] {
-
-  def transitionFunction(a: A): (A, Prob, Prob) = (symmetricTransitionFunction(a), 1.0, 1.0)
-
-  def symmetricTransitionFunction(a: A): A
-
-}
-
 trait MaximumEntropy[A] extends MetropolisHastingsStochastic[A] {
 
   def inverseTemperature: Double
 
   def costFunction(a: A): Double
 
-  def unnormalizedProbabilityOf(a: A): Prob = math.exp(-inverseTemperature * costFunction(a))
+  def logUnnormalizedProbabilityOf(a: A): Prob = -inverseTemperature * costFunction(a)
 }
