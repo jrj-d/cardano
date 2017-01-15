@@ -2,7 +2,7 @@ name := "cardano"
 
 version := "0.1-SNAPSHOT"
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.0"
 
 resolvers ++= Seq(
             "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
@@ -10,9 +10,9 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= Seq (
-  "org.scalanlp" %% "breeze" % "0.12",
-  "org.scalanlp" %% "breeze-natives" % "0.12",
-	"org.scalatest" % "scalatest_2.11" % "3.0.1" % "test"
+  "org.scalanlp" %% "breeze" % "0.13",
+  "org.scalanlp" %% "breeze-natives" % "0.13",
+	"org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
 
 initialCommands in console :=
