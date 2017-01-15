@@ -27,7 +27,7 @@ class MarkovTest extends FlatSpec with Matchers {
 
   "A Californian weather model" should "have around 833 sunny days out of 1000" in {
     for(i <- 0 to 5) {
-      nbSunnyDays.expectation(1000) should be (833.0 +- 2)
+      nbSunnyDays.expectation(100) should be (833.0 +- 10)
     }
   }
 

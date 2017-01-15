@@ -4,7 +4,7 @@ import cardano.distributions.AllDistributions
 import org.apache.commons.math3.random.MersenneTwister
 import org.scalatest._
 
-class FunctionalTest extends FlatSpec with Matchers {
+class FilterTest extends FlatSpec with Matchers {
 
   val generator = new AllDistributions(new MersenneTwister(0))
 
