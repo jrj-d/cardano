@@ -8,6 +8,11 @@ class DiscreteDistributionsTest extends FlatSpec with Matchers {
 
   val generator = new AllDistributions(new MersenneTwister(0))
 
+  "A biased coin toss" should "have correct expectation" in {
+    val coin: Stochastic[Boolean] = generator.coin(0.3)
+    coin.expectation(10000) should be (0.3 +- 0.01)
+  }
+
   "A die roll" should "have its expected value around 3.5 (int version)" in {
     val die: Stochastic[Int] = generator.uniform(6).map(_ + 1)
     for(i <- 0 to 10) {

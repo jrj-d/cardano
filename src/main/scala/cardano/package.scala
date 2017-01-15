@@ -11,6 +11,7 @@ package object cardano {
   implicit def numericsHaveMoments[A](rv: Stochastic[A])(implicit numeric: Numeric[A]): Moments[A] = new NumericMoments(rv)
   implicit def doublesHaveMoments(rv: Stochastic[Double]): Moments[Double] = new DoubleMoments(rv)
   implicit def intsHaveMoments(rv: Stochastic[Int]): Moments[Int] = new IntMoments(rv)
+  implicit def booleansHaveMoments[A](rv: Stochastic[A])(implicit f: Stochastic[A] => Stochastic[Int]): Moments[Int] = new IntMoments(rv)
 
   implicit def canPerformBayesianInference[A](rv: Stochastic[A]): Posterior[A] = new Posterior(rv)
 }
