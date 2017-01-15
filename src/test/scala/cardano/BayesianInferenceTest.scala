@@ -17,21 +17,11 @@ class BayesianInferenceTest extends FlatSpec with Matchers {
   }
 
   "Posterior by Bayesian inference on beta-bernoulli" should "have the correct expectation" in {
-    for(i <- 0 to 10) {
-      posterior.expectation(1000) should be (0.3077 +- 0.005)
-    }
-    for(i <- 0 to 1) {
-      posterior.expectation(10000) should be (0.3077 +- 0.0005)
-    }
+    posterior.expectation(1000) should be (0.3077 +- 0.005)
   }
 
   "Posterior by Bayesian inference on beta-bernoulli" should "have the correct standard deviation" in {
-    for(i <- 0 to 10) {
-      posterior.std(1000) should be (0.0128 +- 0.001)
-    }
-    for(i <- 0 to 1) {
-      posterior.std(10000) should be (0.0128 +- 0.0005)
-    }
+    posterior.std(1000) should be (0.0128 +- 0.001)
   }
 
 }
