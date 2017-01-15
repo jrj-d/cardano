@@ -15,6 +15,8 @@ trait Stochastic[+A] {
 
   def repeat[B >: A, F[_]](f: (=> B) => F[B]): Stochastic[F[B]] = StochasticHigherKind(this, f)
 
+  def markov[B >: A](f: B => Stochastic[B]): Stochastic[Stream[B]] = StochasticMarkov(this, f)
+
   def sample: A
 
   def randomGenerator: RandomGenerator
@@ -68,6 +70,14 @@ final case class StochasticHigherKind[F[_], A](stochastic: Stochastic[A], f: (=>
     */
 
   def sample: F[A] = f(stochastic.sample)
+  def randomGenerator: RandomGenerator = stochastic.randomGenerator
+}
+
+final case class StochasticMarkov[A](stochastic: Stochastic[A], f: A => Stochastic[A]) extends Stochastic[Stream[A]] {
+  def sample: Stream[A] = {
+    lazy val chain: Stream[A] = stochastic.sample #:: chain.map(f(_).sample)
+    chain
+  }
   def randomGenerator: RandomGenerator = stochastic.randomGenerator
 }
 
