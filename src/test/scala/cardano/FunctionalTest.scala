@@ -1,6 +1,5 @@
 package cardano
 
-import cardano.distributions.AllDistributions
 import org.apache.commons.math3.random.MersenneTwister
 import org.scalatest._
 
@@ -29,7 +28,7 @@ class FunctionalTest extends FlatSpec with Matchers {
   }
 
   "Hitting a 6" should "take 6 dice rolls on average" in {
-    val diceRolls: Stochastic[Stream[Int]] = generator.uniform(6).map(_ + 1).repeat(Stream.continually[Int])
+    val diceRolls: Stochastic[Stream[Int]] = generator.discreteUniform(6).map(_ + 1).repeat(Stream.continually[Int])
     val requiredRolls: Stochastic[Int] = diceRolls.map(_.takeWhile(_ != 6).length + 1)
     for(i <- 0 to 10) {
       requiredRolls.expectation(10000) should be (6.0 +- 0.1)

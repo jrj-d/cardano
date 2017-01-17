@@ -1,8 +1,7 @@
-package cardano.distributions
+package cardano.continuous
 
 import breeze.stats.distributions.{Beta, RandBasis, ThreadLocalRandomGenerator}
 import cardano._
-import org.apache.commons.math3.random.RandomGenerator
 
 trait ContinuousDistributions extends Distributions {
 
@@ -11,8 +10,6 @@ trait ContinuousDistributions extends Distributions {
   def gaussian: Stochastic[Double] = new Stochastic[Double] {
 
     def sample: Double = randomGenerator.nextGaussian()
-
-    def randomGenerator: RandomGenerator = self.randomGenerator
 
   }
 
@@ -24,8 +21,14 @@ trait ContinuousDistributions extends Distributions {
 
     def sample: Double = sampler.draw()
 
-    def randomGenerator: RandomGenerator = self.randomGenerator
+  }
+
+  def continuousUniform: Stochastic[Double] = new Stochastic[Double] {
+
+    def sample: Double = randomGenerator.nextDouble()
 
   }
+
+  def continuousUniform(a: Double, b: Double): Stochastic[Double] = continuousUniform.map(a + (b - a) * _)
 
 }

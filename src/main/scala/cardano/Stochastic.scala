@@ -1,7 +1,6 @@
 package cardano
 
-import cardano.distributions.AllDistributions
-import org.apache.commons.math3.random.{MersenneTwister, RandomGenerator}
+import org.apache.commons.math3.random.MersenneTwister
 
 import scala.language.higherKinds
 
@@ -19,23 +18,20 @@ trait Stochastic[+A] {
 
   def sample: A
 
-  def randomGenerator: RandomGenerator
-
 }
+
+final case class StochasticConstant[A](sample: A) extends Stochastic[A]
 
 final case class StochasticMap[A, +B](stochastic: Stochastic[A], f: A => B) extends Stochastic[B] {
   def sample: B = f(stochastic.sample)
-  def randomGenerator: RandomGenerator = stochastic.randomGenerator
 }
 
 final case class StochasticFlatMap[A, +B](stochastic: Stochastic[A], f: A => Stochastic[B]) extends Stochastic[B] {
   def sample: B = f(stochastic.sample).sample
-  def randomGenerator: RandomGenerator = stochastic.randomGenerator
 }
 
 final case class StochasticFilter[A](stochastic: Stochastic[A], f: A => Boolean) extends Stochastic[A] {
   def sample: A = Stream.continually(stochastic.sample).dropWhile(a => !f(a)).head
-  def randomGenerator: RandomGenerator = stochastic.randomGenerator
 }
 
 final case class StochasticHigherKind[F[_], A](stochastic: Stochastic[A], f: (=> A) => F[A]) extends Stochastic[F[A]] {
@@ -44,7 +40,7 @@ final case class StochasticHigherKind[F[_], A](stochastic: Stochastic[A], f: (=>
     * The only change is replacing `f: A => B` by `f: (=> A) => B`.
     * This would have worked:
     * {{{
-    *   scala> val die = Stochastic.uniform(6).map(_ + 1)
+    *   scala> val die = Stochastic.discreteUniform(6).map(_ + 1)
     *   die: cardano.Stochastic[Int] = StochasticMap(cardano.distributions.DiscreteDistributions$$anon$1@fc1001b,<function1>)
     *
     *   scala> val dice = die.map(Stream.continually[Int])
@@ -70,7 +66,6 @@ final case class StochasticHigherKind[F[_], A](stochastic: Stochastic[A], f: (=>
     */
 
   def sample: F[A] = f(stochastic.sample)
-  def randomGenerator: RandomGenerator = stochastic.randomGenerator
 }
 
 final case class StochasticMarkov[A](stochastic: Stochastic[A], f: A => Stochastic[A]) extends Stochastic[Stream[A]] {
@@ -78,7 +73,6 @@ final case class StochasticMarkov[A](stochastic: Stochastic[A], f: A => Stochast
     lazy val chain: Stream[A] = stochastic.sample #:: chain.map(f(_).sample)
     chain
   }
-  def randomGenerator: RandomGenerator = stochastic.randomGenerator
 }
 
 object Stochastic extends AllDistributions(new MersenneTwister())

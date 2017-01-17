@@ -1,6 +1,5 @@
 package cardano
 
-import cardano.distributions.AllDistributions
 import org.apache.commons.math3.random.MersenneTwister
 import org.scalatest._
 
@@ -12,7 +11,7 @@ class BayesianInferenceTest extends FlatSpec with Matchers {
 
   val observations: Seq[Boolean] = Seq.fill(300)(true) ++ Seq.fill(700)(false)
 
-  val posterior: Stochastic[Double] = prior.posterior(observations) { (parameter, observation) =>
+  val posterior: Stochastic[Double] = generator.posterior(prior, observations) { (parameter, observation) =>
     if(observation) parameter else 1 - parameter
   }
 

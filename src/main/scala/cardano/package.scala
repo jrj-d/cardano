@@ -1,4 +1,3 @@
-import cardano.bayesian.Posterior
 import cardano.moments.{DoubleMoments, IntMoments, Moments, NumericMoments}
 
 package object cardano {
@@ -13,5 +12,4 @@ package object cardano {
   implicit def intsHaveMoments(rv: Stochastic[Int]): Moments[Int] = new IntMoments(rv)
   implicit def booleansHaveMoments[A](rv: Stochastic[A])(implicit f: Stochastic[A] => Stochastic[Int]): Moments[Int] = new IntMoments(rv)
 
-  implicit def canPerformBayesianInference[A](rv: Stochastic[A]): Posterior[A] = new Posterior(rv)
 }
