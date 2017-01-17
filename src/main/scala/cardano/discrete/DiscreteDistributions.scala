@@ -1,9 +1,8 @@
-package cardano.distributions
+package cardano.discrete
 
 import breeze.linalg.{DenseVector, QuasiTensor}
 import breeze.stats.distributions.{Multinomial, RandBasis, ThreadLocalRandomGenerator}
 import cardano._
-import org.apache.commons.math3.random.RandomGenerator
 
 import scala.collection.immutable.IndexedSeq
 
@@ -20,20 +19,17 @@ trait DiscreteDistributions extends Distributions {
 
     def sample: A = values(sampler.sample(1).head)
 
-    override def randomGenerator: RandomGenerator = self.randomGenerator
-
   }
 
-  def uniform[A](values: Seq[A]): Stochastic[A] = new Stochastic[A] {
+  def discreteUniform[A](values: Seq[A]): Stochastic[A] = new Stochastic[A] {
 
     private lazy val indexedValues: IndexedSeq[A] = values.toIndexedSeq
 
     def sample: A = indexedValues(randomGenerator.nextInt(indexedValues.length))
 
-    def randomGenerator: RandomGenerator = self.randomGenerator
   }
 
-  def uniform(n: Int): Stochastic[Int] = uniform(0 until n)
+  def discreteUniform(n: Int): Stochastic[Int] = discreteUniform(0 until n)
 
   def fromMass(mass: Iterable[Prob]): Stochastic[Int] = choose(mass.zipWithIndex.map{case (p, v) => (v, p)})
 

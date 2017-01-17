@@ -1,6 +1,5 @@
 package cardano
 
-import cardano.distributions.AllDistributions
 import org.apache.commons.math3.random.MersenneTwister
 import org.scalatest._
 
