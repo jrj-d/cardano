@@ -10,7 +10,9 @@ trait Stochastic[+A] {
 
   def flatMap[B](f: A => Stochastic[B]): Stochastic[B] = StochasticFlatMap(this, f)
 
-  def filter(f: A => Boolean): Stochastic[A] = StochasticFilter(this, f)
+  def withFilter(f: A => Boolean): Stochastic[A] = StochasticFilter(this, f)
+
+  def filter(f: A => Boolean): Stochastic[A] = withFilter(f)
 
   def repeat[B >: A, F[_]](f: (=> B) => F[B]): Stochastic[F[B]] = StochasticHigherKind(this, f)
 
