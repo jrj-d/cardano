@@ -1,6 +1,8 @@
 name := "cardano"
 
-version := "0.1-SNAPSHOT"
+version := "0.1"
+
+organization := "org.jrj-d"
 
 scalaVersion := "2.12.0"
 
