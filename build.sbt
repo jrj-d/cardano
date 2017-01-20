@@ -49,3 +49,42 @@ testScalaStyle := {
 }
 
 (test in Test) <<= (test in Test) dependsOn testScalaStyle
+
+// publishing
+
+publishMavenStyle := true
+publishArtifact in Test := false
+
+pomIncludeRepository := { _ => false }
+
+credentials += Credentials(Path.userHome / ".sbt" / ".oss-credentials")
+
+publishTo := {
+  val nexus = "https://oss.sonatype.org/"
+  if (isSnapshot.value)
+    Some("Sonatype Snapshots Nexus" at nexus + "content/repositories/snapshots")
+  else
+    Some("Sonatype Releases Nexus"  at nexus + "service/local/staging/deploy/maven2")
+}
+
+pomExtra := (
+  <url>https://github.com/jrj-d/cardano</url>
+    <licenses>
+      <license>
+        <name>Apache License 2.0</name>
+        <url>https://opensource.org/licenses/Apache-2.0</url>
+        <distribution>repo</distribution>
+      </license>
+    </licenses>
+    <scm>
+      <url>git@github.com:jrj-d/cardano.git</url>
+      <connection>scm:git@github.com:jrj-d/cardano.git</connection>
+    </scm>
+    <developers>
+      <developer>
+        <id>jrj-d</id>
+        <name>Julien Dumazert</name>
+        <url>https://github.com/jrj-d</url>
+      </developer>
+    </developers>)
+
