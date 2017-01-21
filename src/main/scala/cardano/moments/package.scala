@@ -2,6 +2,9 @@ package cardano
 
 package object moments {
 
-  private[moments] val defaultNbSamples: Int = 1000
+  /**
+    * Default number of samples for moment calculation.
+    */
+  val defaultNbSamples: Int = 1000
 
 }

@@ -11,7 +11,7 @@ class MarkovTest extends FlatSpec with Matchers {
   case object Sunny extends Weather
   case object Rainy extends Weather
 
-  val weather: Stochastic[Stream[Weather]] = StochasticConstant[Weather](Sunny).markov[Weather] {
+  val weather: Stochastic[Stream[Weather]] = generator.constant[Weather](Sunny).markov[Weather] {
     case Sunny => generator.coin(0.9).map {
       case true => Sunny
       case false => Rainy
