@@ -8,5 +8,9 @@ Models random variables and bayesian nets using monads in Scala. Inference is pe
 Include this dependency in your `sbt` configuration:
 
 ```
-"org.jrj-d" %% "cardano" % "0.1"
+"org.jrj-d" %% "cardano" % "0.2"
 ```
+
+## Usage
+
+The scaladoc is available [here](https://oss.sonatype.org/service/local/repositories/releases/archive/org/jrj-d/cardano_2.12/0.2/cardano_2.12-0.2-javadoc.jar/!/index.html).

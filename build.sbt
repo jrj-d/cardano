@@ -1,6 +1,6 @@
 name := "cardano"
 
-version := "0.2-SNAPSHOT"
+version := "0.2"
 
 organization := "org.jrj-d"
 
