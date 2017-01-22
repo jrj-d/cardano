@@ -1,7 +1,5 @@
 name := "cardano"
 
-version := "0.3-SNAPSHOT"
-
 organization := "org.jrj-d"
 
 scalaVersion := "2.12.0"
@@ -90,3 +88,19 @@ pomExtra := (
       </developer>
     </developers>)
 
+import ReleaseTransformations._
+
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  ReleaseStep(action = Command.process("publishSigned", _)),
+  setNextVersion,
+  commitNextVersion,
+  ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+  pushChanges
+)
