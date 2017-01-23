@@ -266,11 +266,8 @@ val exactBeta = Stochastic.beta(20, 10)
 
 logDensity: (a: Double, b: Double, value: Double)Double
 cap: (value: Double)Double
-metropolisBeta: cardano.Stochastic[Double] = cardano.metropolis.MetropolisDistributions$$anon$1@1aca31a1
-exactBeta: cardano.Stochastic[Double] = cardano.continuous.ContinuousDistributions$$anon$2@9be85d1
-
-scala> metropolis
-metropolis   metropolisBeta
+metropolisBeta: cardano.Stochastic[Double] = ...
+exactBeta: cardano.Stochastic[Double] = ...
 
 scala> metropolisBeta.expectation
 res61: Double = 0.6743298870740473
