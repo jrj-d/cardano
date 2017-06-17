@@ -2,11 +2,12 @@ package cardano.continuous
 
 import breeze.stats.distributions.{Beta, RandBasis, ThreadLocalRandomGenerator}
 import cardano._
+import org.apache.commons.math3.random.RandomGenerator
 
 /**
   * This trait implements some standard continuous distributions.
   */
-trait ContinuousDistributions extends Distributions {
+trait ContinuousDistributions {
 
   self =>
 
@@ -15,11 +16,7 @@ trait ContinuousDistributions extends Distributions {
     *
     * @return a standard normal random variable
     */
-  def gaussian: Stochastic[Double] = new Stochastic[Double] {
-
-    def sample: Double = randomGenerator.nextGaussian()
-
-  }
+  def gaussian: Stochastic[Double] = (random: RandomGenerator) => random.nextGaussian()
 
   /**
     * Creates a normal random variable.
@@ -37,12 +34,10 @@ trait ContinuousDistributions extends Distributions {
     * @param b negative parameter
     * @return a Beta random variable
     */
-  def beta(a: Double, b: Double): Stochastic[Double] = new Stochastic[Double] {
-
-    private val sampler = new Beta(a, b)(new RandBasis(new ThreadLocalRandomGenerator(randomGenerator)))
-
-    def sample: Double = sampler.draw()
-
+  def beta(a: Double, b: Double): Stochastic[Double] = (random: RandomGenerator) => {
+    // not cool performance-wise to create this object
+    val sampler = new Beta(a, b)(new RandBasis(new ThreadLocalRandomGenerator(random)))
+    sampler.draw()
   }
 
   /**
@@ -50,11 +45,7 @@ trait ContinuousDistributions extends Distributions {
     *
     * @return a uniform random variable on [0, 1]
     */
-  def continuousUniform: Stochastic[Double] = new Stochastic[Double] {
-
-    def sample: Double = randomGenerator.nextDouble()
-
-  }
+  def continuousUniform: Stochastic[Double] = (random: RandomGenerator) => random.nextDouble()
 
   /**
     * Creates a uniform random variable on [`a`, `b`].

@@ -1,37 +1,38 @@
 package cardano.discrete
 
-import breeze.linalg.{DenseVector, QuasiTensor}
-import breeze.stats.distributions.{Multinomial, RandBasis, ThreadLocalRandomGenerator}
 import cardano._
+import org.apache.commons.math3.random.RandomGenerator
 
 import scala.collection.immutable.IndexedSeq
 
 /**
   * This trait implements some standard discrete distributions.
   */
-trait DiscreteDistributions extends Distributions {
-
-  self =>
+trait DiscreteDistributions {
 
   /**
     * Creates a random variable that samples from the discrete distribution given as input.
     *
-    * @param distribution a discrete distribution given as a (finite) sequence of (value, probability) pairs
-    * @param ev Breeze internals
-    * @param sumImpl Breeze internals
+    * @param distribution a discrete distribution given as a (finite) sequence of (probability, value) pairs
     * @tparam A the concrete type of the random variable
     * @return a random variable that samples from the discrete distribution given as input
     */
-  def choose[A](distribution: Seq[(A, Prob)])
-               (implicit ev: DenseVector[Double] => QuasiTensor[Int, Double],
-                sumImpl: breeze.linalg.sum.Impl[DenseVector[Double], Double]): Stochastic[A] = new Stochastic[A] {
+  def choose[A](distribution: Seq[(Double, A)]): Stochastic[A] = new Stochastic[A] {
 
-    private lazy val values: IndexedSeq[A] = distribution.map(_._1).toIndexedSeq
-    private lazy val sampler: Multinomial[DenseVector[Prob], Int] = Multinomial(
-      DenseVector(distribution.map(_._2).toArray))(ev, sumImpl, new RandBasis(new ThreadLocalRandomGenerator(randomGenerator)))
+    private val sum: Double = distribution.map(_._1).reduce(_ + _)
+    private val indexedValues: IndexedSeq[A] = distribution.map(_._2).toIndexedSeq
 
-    def sample: A = values(sampler.sample(1).head)
-
+    def sample(implicit random: RandomGenerator): A = {
+      val threshold = sum * random.nextDouble()
+      var prob = 0.0
+      var i = -1
+      for (w <- distribution.map(_._1)) {
+        i += 1
+        prob = prob + w
+        if (prob >= threshold) return indexedValues(i) // scalastyle:ignore
+      }
+      throw new RuntimeException("Sampling failed")
+    }
   }
 
   /**
@@ -43,9 +44,9 @@ trait DiscreteDistributions extends Distributions {
     */
   def discreteUniform[A](values: Seq[A]): Stochastic[A] = new Stochastic[A] {
 
-    private lazy val indexedValues: IndexedSeq[A] = values.toIndexedSeq
+    private val indexedValues: IndexedSeq[A] = values.toIndexedSeq
 
-    def sample: A = indexedValues(randomGenerator.nextInt(indexedValues.length))
+    def sample(implicit random: RandomGenerator): A = indexedValues(random.nextInt(indexedValues.length))
 
   }
 
@@ -63,7 +64,7 @@ trait DiscreteDistributions extends Distributions {
     * @param mass a discrete distribution on the first natural numbers given as probabilities
     * @return a random variable that samples from the first natural numbers with probabilities given by `mass`
     */
-  def fromMass(mass: Seq[Prob]): Stochastic[Int] = choose(mass.zipWithIndex.map{case (p, v) => (v, p)})
+  def fromMass(mass: Seq[Double]): Stochastic[Int] = choose(mass.zipWithIndex)
 
   /**
     * Creates a Bernoulli random variable.
@@ -71,7 +72,7 @@ trait DiscreteDistributions extends Distributions {
     * @param p the probability of a positive outcome
     * @return a Bernoulli random variable
     */
-  def coin(p: Prob = 0.5): Stochastic[Boolean] = fromMass(Seq(1 - p, p)).map(_ == 1)
+  def coin(p: Double = 0.5): Stochastic[Boolean] = Stochastic((random: RandomGenerator) => if (random.nextDouble <= p) true else false)
 
   /**
     * See [[coin]].

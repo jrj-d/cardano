@@ -12,7 +12,8 @@ resolvers ++= Seq(
 libraryDependencies ++= Seq (
   "org.scalanlp" %% "breeze" % "0.13",
   "org.scalanlp" %% "breeze-natives" % "0.13",
-	"org.scalatest" %% "scalatest" % "3.0.1" % "test"
+	"org.scalatest" %% "scalatest" % "3.0.1" % "test",
+  "org.typelevel" %% "cats" % "0.9.0"
 )
 
 initialCommands in console :=
@@ -26,6 +27,7 @@ initialCommands in console :=
     |}
     |
     |import cardano._
+    |import org.apache.commons.math3.random.MersenneTwister
   """.stripMargin
 
 // scalastyle for main code
