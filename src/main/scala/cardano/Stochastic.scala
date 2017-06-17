@@ -1,6 +1,7 @@
 package cardano
 
 import cardano.moments.MomentsFunctions
+import cats.Monad
 import org.apache.commons.math3.random.RandomGenerator
 
 import scala.language.{higherKinds, implicitConversions}
@@ -115,5 +116,21 @@ object Stochastic extends Distributions {
     * @return a constant random variable
     */
   def pure[A](a: A): Stochastic[A] = Stochastic((_: RandomGenerator) => a)
+
+  implicit def monadForStochastic: Monad[Stochastic] = new Monad[Stochastic] {
+
+    def flatMap[A, B](fa: Stochastic[A])(f: A => Stochastic[B]): Stochastic[B] = fa.flatMap(f)
+
+    override def map[A, B](fa: Stochastic[A])(f: A => B): Stochastic[B] = fa.map(f)
+
+    def pure[A](a: A): Stochastic[A] = Stochastic.pure(a)
+
+    def tailRecM[A, B](a: A)(f: A => Stochastic[Either[A, B]]): Stochastic[B] =
+      f(a).flatMap {
+        case Left(a1) => tailRecM(a1)(f)
+        case Right(b) => pure(b)
+      }
+
+  }
 
 }
