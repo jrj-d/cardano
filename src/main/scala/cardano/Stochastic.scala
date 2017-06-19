@@ -1,6 +1,7 @@
 package cardano
 
 import cardano.moments.MomentsFunctions
+import cardano.semifield.Semifield
 import cats.Monad
 import org.apache.commons.math3.random.RandomGenerator
 
@@ -85,6 +86,20 @@ trait Stochastic[+A] extends MomentsFunctions[A] {
     lazy val chain: Stream[B] = this.sample(random) #:: chain.map(f(_).sample(random))
     chain
   })
+
+  /**
+    * Lifts the random variable into a model to perform inference
+    *
+    * @tparam B the type of the model (mainly for covariance)
+    * @return a model equivalent to the random variable, i.e. whose prior is the random variable and without any
+    *         likelihood mixed in
+    */
+  def lifted[B >: A](implicit semifield: Semifield[Double]): Model[B] = Model.primitive(this)
+
+  /**
+    * Alias for [lifted].
+    */
+  def l[B >: A](implicit semifield: Semifield[Double]): Model[B] = lifted[B]
 
   /**
     * Returns a sample from the random variable.
