@@ -2,7 +2,10 @@ package cardano
 
 import org.scalatest._
 import cardano.inference.prior
-import org.apache.commons.math3.random.MersenneTwister
+import org.apache.commons.math3.random.{MersenneTwister, RandomGenerator}
+import cardano.semifield.syntax._
+
+import scala.annotation.tailrec
 
 class ModelTest extends FlatSpec with Matchers {
 
@@ -110,6 +113,43 @@ class ModelTest extends FlatSpec with Matchers {
     }
   }
 
-  //TODO: test synchronization barriers for SMC
+  "Weights" should "be applied at the right time" in {
+
+    import cardano.semifield.logprob._
+
+    implicit val random = new MersenneTwister(42)
+
+    def stochasticMarker(i: Int, acc: StringBuilder): Model[Int] = Stochastic { (_: RandomGenerator) =>
+      acc ++= s"s$i"
+      i
+    }.l
+
+    def weightMarker(acc: StringBuilder)(i: Int): Double = {
+      acc ++= s"w$i"
+      0.0
+    }
+
+    val acc = new StringBuilder
+
+    val model: Model[Int] = for {
+      i <- stochasticMarker(3, acc).weight(weightMarker(acc))
+      j <- stochasticMarker(4, acc).weight(weightMarker(acc))
+      k <- stochasticMarker(i + j, acc).weight(weightMarker(acc))
+    } yield k
+
+    @tailrec def loop(m: Model[Int]): Int = {
+      acc += '|'
+      m.step match {
+        case Left(s) =>
+          val (_, newModel) = s.sample
+          loop(newModel)
+        case Right((_, a)) => a
+      }
+    }
+
+    loop(model)
+
+    acc.toString shouldEqual "|s3w3|s4w4|s7w7|"
+  }
 
 }
