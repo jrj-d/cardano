@@ -6,7 +6,7 @@ import org.apache.commons.math3.random.MersenneTwister
 
 class ModelTest extends FlatSpec with Matchers {
 
-  "Model prior and Stochastic" should "output same samples" in {
+  "Model prior and Stochastic" should "output same samples (1)" in {
 
     import cardano.semifield.logprob._
 
@@ -23,5 +23,93 @@ class ModelTest extends FlatSpec with Matchers {
 
     Seq.fill(100)(stochastic.sample(random0)) should equal (Seq.fill(100)(modelPrior.sample(random1)))
   }
+
+  "Model prior and Stochastic" should "output same samples (2)" in {
+
+    import cardano.semifield.logprob._
+
+    val stochastic: Stochastic[Double] = Stochastic.gaussian(3.0, 2.0)
+
+    val model: Model[Double] = Stochastic.gaussian(3.0, 2.0).l
+
+    val modelPrior: Stochastic[Double] = prior(model).map(_._2)
+
+    val random0 = new MersenneTwister(42)
+    val random1 = new MersenneTwister(42)
+
+    Seq.fill(100)(stochastic.sample(random0)) should equal (Seq.fill(100)(modelPrior.sample(random1)))
+  }
+
+  "Model prior and Stochastic" should "output same samples (3)" in {
+
+    import cardano.semifield.logprob._
+
+    val stochastic: Stochastic[Double] = Stochastic.pure(3.0).flatMap(a => Stochastic.gaussian(a, 2.0))
+
+    val model: Model[Double] = Model.pure(3.0).flatMap(a => Stochastic.gaussian(a, 2.0).l)
+
+    val modelPrior: Stochastic[Double] = prior(model).map(_._2)
+
+    val random0 = new MersenneTwister(42)
+    val random1 = new MersenneTwister(42)
+
+    Seq.fill(100)(stochastic.sample(random0)) should equal (Seq.fill(100)(modelPrior.sample(random1)))
+  }
+
+  "Model prior and Stochastic" should "output same samples (4)" in {
+
+    import cardano.semifield.logprob._
+
+    val stochastic: Stochastic[Double] = Stochastic.gaussian(3.0, 2.0)
+      .flatMap(a => Stochastic.gaussian(a, 2.0))
+      .flatMap(a => Stochastic.gaussian(a, 2.0))
+
+    val model: Model[Double] = Stochastic.gaussian(3.0, 2.0).l
+      .flatMap(a => Stochastic.gaussian(a, 2.0).l)
+      .flatMap(a => Stochastic.gaussian(a, 2.0).l)
+
+    val modelPrior: Stochastic[Double] = prior(model).map(_._2)
+
+    val random0 = new MersenneTwister(42)
+    val random1 = new MersenneTwister(42)
+
+    Seq.fill(100)(stochastic.sample(random0)) should equal (Seq.fill(100)(modelPrior.sample(random1)))
+  }
+
+  "Model prior and Stochastic" should "output same samples (5)" in {
+
+    import cardano.semifield.logprob._
+
+    val stochastic: Stochastic[Double] = Stochastic.gaussian(3.0, 2.0)
+      .flatMap(a => Stochastic.gaussian(a, 2.0))
+
+    val model: Model[Double] = Stochastic.gaussian(3.0, 2.0).l
+      .weight(v => v)
+      .flatMap(a => Stochastic.gaussian(a, 2.0).l)
+
+    val modelPrior: Stochastic[Double] = prior(model).map(_._2)
+
+    val random0 = new MersenneTwister(42)
+    val random1 = new MersenneTwister(42)
+
+    Seq.fill(100)(stochastic.sample(random0)) should equal (Seq.fill(100)(modelPrior.sample(random1)))
+  }
+
+  "Model" should "not support consecutive weights" in {
+
+    import cardano.semifield.logprob._
+
+    implicit val random = new MersenneTwister(42)
+
+    a [RuntimeException] should be thrownBy {
+      prior(Model.Weight(Model.pure(4).weight(i => i), (i: Int) => i)).sample
+    }
+
+    a [RuntimeException] should be thrownBy {
+      prior(Model.Weight(Model.pure(4).weight(i => i), (i: Int) => i).flatMap(i => Model.pure(i))).sample
+    }
+  }
+
+  //TODO: test synchronization barriers for SMC
 
 }

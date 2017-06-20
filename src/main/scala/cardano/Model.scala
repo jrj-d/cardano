@@ -18,6 +18,8 @@ import scala.annotation.tailrec
   */
 sealed abstract class Model[+A](implicit val semifield: Semifield[Double]) {
 
+  //TODO: what laws does Model verify?
+
   import Model.{Pure, Primitive, Weight, FlatMapped}
 
   /**
