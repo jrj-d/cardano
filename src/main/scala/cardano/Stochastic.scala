@@ -14,6 +14,8 @@ import scala.language.{higherKinds, implicitConversions}
   */
 trait Stochastic[+A] extends MomentsFunctions[A] {
 
+  override def toString: String = "Stochastic(...)"
+
   /**
     * Creates a new random variable by applying a deterministic function
     * to the underlying random variable.

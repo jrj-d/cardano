@@ -18,9 +18,9 @@ import scala.annotation.tailrec
   */
 sealed abstract class Model[+A](implicit val semifield: Semifield[Double]) {
 
-  //TODO: what laws does Model verify?
-
   import Model.{Pure, Primitive, Weight, FlatMapped}
+
+  override def toString: String = "Model(...)"
 
   /**
     * Creates a new probabilistic model by applying a stochastic function to the underlying

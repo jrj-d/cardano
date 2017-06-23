@@ -4,6 +4,7 @@ import org.apache.commons.math3.random.RandomGenerator
 import cardano.semifield.syntax._
 
 import scala.annotation.tailrec
+import cats.instances.list._
 
 package object inference {
 
@@ -138,6 +139,49 @@ package object inference {
   def metropolisFromPrior[A](model: Model[A], burnIn: Int, interval: Int): Stochastic[Stream[A]] = {
     implicit val semifield = model.semifield
     metropolis(model, (_: A) => model, (_: A) => semifield.unit, burnIn, interval)
+  }
+
+  /**
+    * Transforms a probabilistic model (prior + likelihood) into another probabilistic model whose prior samples
+    * i.i.d instances of the posterior of the initial model, and whose likelihood is an unbiased estimate of the
+    * marginal likelihood of the initial model.
+    *
+    * @param model the probabilistic model to transform
+    * @param nParticles the number of i.i.d instances to sample from the posterior
+    * @tparam A the concrete type of the probability model
+    * @return a probabilistic model as described above
+    */
+  def sequentialMonteCarlo[A](model: Model[A], nParticles: Int): Model[List[A]] = {
+
+    implicit val semifield = model.semifield
+
+    val injectedNParticles = semifield.inject(nParticles)
+
+    def resample[B](particles: List[(Double, B)]): Model[List[B]] = {
+      Stochastic.choose(particles)
+        .repeat(List.fill[B](nParticles))
+        .l.weight(_ => particles.map(_._1).reduce(_ |+| _) |/| injectedNParticles)
+    }
+
+    def remodel(mixedParticles: List[Either[Stochastic[(Double, Model[A])], (Double, A)]]): Model[List[(Double, Model[A])]] = {
+      val stochasticParticles: List[Model[(Double, Model[A])]] = mixedParticles.map {
+        case Left(s) => s.l
+        case Right((w, a)) => Model.pure((w, Model.pure(a)))
+      }
+      Model.monadForModel.sequence(stochasticParticles)
+    }
+
+    def step(particles: List[Model[A]]): Model[Either[List[Model[A]], List[A]]] = {
+      val advancedParticles: List[Either[Stochastic[(Double, Model[A])], (Double, A)]] = particles.map(_.step)
+      if(advancedParticles.forall(_.isRight)) {
+        val rightProjections = advancedParticles.map(_.right.get)
+        resample(rightProjections).map(Right(_))
+      } else {
+        remodel(advancedParticles).flatMap(resample).map(Left(_))
+      }
+    }
+
+    Model.monadForModel.tailRecM(List.fill(nParticles)(model))(step)
   }
 
 }
