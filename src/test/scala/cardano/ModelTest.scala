@@ -1,7 +1,7 @@
 package cardano
 
 import org.scalatest._
-import cardano.inference.prior
+import cardano.inference.base.prior
 import org.apache.commons.math3.random.{MersenneTwister, RandomGenerator}
 import cardano.semifield.logprob._
 
