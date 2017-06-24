@@ -113,11 +113,7 @@ trait Stochastic[+A] extends MomentsFunctions[A] {
 }
 
 /**
-  * The main entry point to [[cardano]]. All standard distributions implemented in [[cardano]] can be
-  * accessed from here.
-  *
-  * The seed is automatically set using the current timestamp; if you wish to set the seed yourself,
-  * have a look at [[Distributions]].
+  * All standard distributions implemented in [[cardano]] can be accessed from here.
   */
 object Stochastic extends Distributions {
 

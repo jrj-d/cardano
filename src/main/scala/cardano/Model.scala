@@ -9,6 +9,10 @@ import scala.annotation.tailrec
   * A free monad adapted to probabilistic computing. A model contains both the prior and the likelihood in a single
   * object.
   *
+  * In essence, a model contains a sampling procedure for a prior `x ~ P(X)` (`X` is of type `A`) and a likelihood
+  * `P(Y=y | X)`. The likelihood (conditional distribution `P(Y|X)` and observation `y`) is entirely described
+  * by the [Model.Weight] primitives contained in the model.
+  *
   * The underlying functor is [Stochastic]. Along to the usual trampolining scala monad (Pure, Suspend, FlatMapped), a
   * new class [Model.Weight] has been added, which represents some weight/likelihood/observation applied to a random
   * variable.

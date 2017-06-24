@@ -38,6 +38,16 @@ package object inference {
     * Transforms a probabilistic model into a random variable that samples value from the prior along with the
     * likelihood.
     *
+    *
+    * If the model describes a prior `P(X)` and a likelihood `P(Y=y | X)`, then applying [prior] and sampling
+    * from it will return a sample `x ~ P(X)` and the associated likelihood `P(Y=y | X=x)`.
+    *
+    * This is the standard way to sample from a [Model].
+    *
+    * {{{
+    *   prior(model).sample
+    * }}}
+    *
     * @param model the probabilistic model to transform
     * @tparam A the concrete type of the probabilistic model
     * @return a random variable that samples tuples of type `(Double, A)` where the second term is a sample from the
@@ -127,6 +137,9 @@ package object inference {
     * Transforms a probabilistic model (prior + likelihood) into a Markov chain whose equilibrium state is the posterior
     * of the model.
     *
+    * If the model describes a prior `P(X)` and a likelihood `P(Y=y | X)`, then applying [metropolisFromPrior]
+    * and sampling from it will return a stream whose equilibrium distribution is the posterior `P(X | Y=y)`.
+    *
     * Beware, the metropolis algorithm (especially when the proposal is the prior as it is the case here) may not
     * converge.
     *
@@ -143,8 +156,41 @@ package object inference {
 
   /**
     * Transforms a probabilistic model (prior + likelihood) into another probabilistic model whose prior samples
+    * i.i.d instances of the prior of the initial model weighted by likelihoods of the initial model,
+    * and whose likelihood is an unbiased estimate of the marginal likelihood of the initial model.
+    *
+    * If the model describes a prior `P(X)` and a likelihood `P(Y=y | X)`, then applying [marginalize] and
+    * sampling from it will return a [List] of samples from `x ~ P(X)` weighted with `P(X=x | Y=y)`. The [List] is
+    * weighted by an unbiased estimate of `P(Y=y)` that has been constructed using those samples.
+    *
+    * The unbiased estimate of `P(Y=y)` may be far off depending on the structure of the probabilistic model.
+    * [sequentialMonteCarlo] can help get a better estimate if factors of the likelihood appear at different stages in
+    * the model, as in a state-space model for instance.
+    *
+    * @param model the probabilistic model to marginalize
+    * @param nSamples the number of i.i.d instances to sample from the prior
+    * @tparam A the concrete type of the probability model
+    * @return a probabilistic model as described above
+    */
+  def marginalize[A](model: Model[A], nSamples: Int): Model[List[(Double, A)]] = {
+    implicit val semifield = model.semifield
+
+    prior(model).repeat(List.fill[(Double, A)](nSamples)).l.weight { weightedSamples =>
+      weightedSamples.map(_._1).reduce(_ |+| _) |/| semifield.inject(nSamples)
+    }
+  }
+
+  /**
+    * Transforms a probabilistic model (prior + likelihood) into another probabilistic model whose prior samples
     * i.i.d instances of the posterior of the initial model, and whose likelihood is an unbiased estimate of the
     * marginal likelihood of the initial model.
+    *
+    * If the model describes a prior `P(X)` and a likelihood `P(Y=y | X)`, then applying [sequentialMonteCarlo] and
+    * sampling from it will return a [List] of samples from `x ~ P(X | Y=y)` and weighted by an unbiased estimate
+    * of `P(Y=y)` that has been constructed using those samples.
+    *
+    * The unbiased estimate of `P(Y=y)` converges rapidly if factors of the likelihood appear at different stages in
+    * the model, as in a state-space model for instance.
     *
     * @param model the probabilistic model to transform
     * @param nParticles the number of i.i.d instances to sample from the posterior
@@ -158,9 +204,14 @@ package object inference {
     val injectedNParticles = semifield.inject(nParticles)
 
     def resample[B](particles: List[(Double, B)]): Model[List[B]] = {
-      Stochastic.choose(particles)
-        .repeat(List.fill[B](nParticles))
-        .l.weight(_ => particles.map(_._1).reduce(_ |+| _) |/| injectedNParticles)
+      val weights = particles.map(_._1)
+      if(weights.forall(_ == semifield.unit)) { // no need to resample if no weight
+        Model.pure(particles.map(_._2))
+      } else {
+        Stochastic.choose(particles)
+          .repeat(List.fill[B](nParticles))
+          .l.weight(_ => weights.reduce(_ |+| _) |/| injectedNParticles)
+      }
     }
 
     def remodel(mixedParticles: List[Either[Stochastic[(Double, Model[A])], (Double, A)]]): Model[List[(Double, Model[A])]] = {
