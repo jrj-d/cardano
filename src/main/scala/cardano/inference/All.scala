@@ -1,3 +1,3 @@
 package cardano.inference
 
-trait All extends Base with Metropolis with SequentialMonteCarlo
+trait All extends Base with Metropolis with SequentialMonteCarlo with ParticleMarkovChainMonteCarlo

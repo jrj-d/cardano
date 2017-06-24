@@ -1,7 +1,7 @@
 package cardano
 
 import org.scalatest._
-import cardano.inference.metropolis._
+import cardano.inference.mh._
 import cardano.semifield.logprob._
 import org.apache.commons.math3.random.MersenneTwister
 

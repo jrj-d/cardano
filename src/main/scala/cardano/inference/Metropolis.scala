@@ -19,8 +19,8 @@ trait Metropolis {
     *                 sampling probability, the third term is the backward sampling probability.
     *                 The likelihood of the proposal is incorporated into the computation of the likelihood of the
     *                 target distribution.
-    * @param target a probabilistic model whose likelihood is an additional factor in the likelihood of the target
-    *               distribution. The model prior describes a latent variable that is discarded.
+    * @param target a probabilistic model whose likelihood is an additional non-marginalized factor in the likelihood
+    *               of the target distribution. The model prior describes a latent variable that is discarded.
     * @param burnIn the number of initial terms of the Markov chain to discard
     * @param interval every `interval`-eth term of the Markov chain is kept
     * @tparam A the concrete type of the probability model
