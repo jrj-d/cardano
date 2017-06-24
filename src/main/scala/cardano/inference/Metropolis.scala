@@ -9,22 +9,25 @@ trait Metropolis {
   /**
     * Builds a Markov chain according to the Metropolis-Hastings algorithm.
     *
-    * This function is the full-fledged algorithm with everything parameterizable; in practice, `metropolisFromPrior`
+    * This function is the full-fledged algorithm with everything parameterizable; in practice, more specific versions
     * should be used.
+    *
+    * Beware, because of the non marginalized target likelihood, the algorithm may never converge.
     *
     * @param initial the first element of the Markov chain
     * @param proposal the proposal distribution as a probabilistic model. The second term of the tuple is the forward
     *                 sampling probability, the third term is the backward sampling probability.
     *                 The likelihood of the proposal is incorporated into the computation of the likelihood of the
     *                 target distribution.
-    * @param target an additional factor in the likelihood of the target distribution
+    * @param target a probabilistic model whose likelihood is an additional factor in the likelihood of the target
+    *               distribution. The model prior describes a latent variable that is discarded.
     * @param burnIn the number of initial terms of the Markov chain to discard
     * @param interval every `interval`-eth term of the Markov chain is kept
     * @tparam A the concrete type of the probability model
     * @return a random variable representing the Markov chain produced by the Metropolis-Hastings algorithm
     */
-  def metropolisHastings[A](initial: Model[A], proposal: A => Model[(A, Double, Double)], target: A => Double,
-                            burnIn: Int, interval: Int): Stochastic[Stream[A]] = {
+  def pseudoMarginalMetropolisHastings[A, B](initial: Model[A], proposal: A => Model[(A, Double, Double)], target: A => Model[B],
+                                             burnIn: Int, interval: Int): Stochastic[Stream[A]] = {
 
     implicit val semifield = initial.semifield
 
@@ -32,14 +35,16 @@ trait Metropolis {
 
       val (lastFullWeight, lastSample) = weightedLastSample
 
-      prior(proposal(lastSample)).flatMap {
+      for {
 
-        case (candidateWeight, (candidateSample, forwardProb, backwardProb)) =>
+        (candidateWeight, (candidateSample, forwardProb, backwardProb)) <- prior(proposal(lastSample))
+        (targetWeight, _)                                               <- prior(target(candidateSample))
 
-          val candidateFullWeight = target(candidateSample) |*| candidateWeight
-          val candidateScore = candidateFullWeight |*| backwardProb
-          val lastScore = lastFullWeight |*| forwardProb
+        candidateFullWeight = targetWeight |*| candidateWeight
+        candidateScore      = candidateFullWeight |*| backwardProb
+        lastScore           = lastFullWeight |*| forwardProb
 
+        weightedSample <- {
           if(candidateScore >= lastScore) {
             Stochastic.pure(candidateFullWeight, candidateSample)
           } else {
@@ -52,7 +57,9 @@ trait Metropolis {
               }
             }
           }
-      }
+        }
+
+      } yield weightedSample
     }
 
     val weightedChainDist = prior(initial).markov(chainTransition)
@@ -63,7 +70,57 @@ trait Metropolis {
   }
 
   /**
+    * Builds a Markov chain according to the Metropolis-Hastings algorithm.
+    *
+    * In this version, the likelihood is deterministic: there is no latent variable to be marginalized.
+    *
+    * @param initial the first element of the Markov chain
+    * @param proposal the proposal distribution as a probabilistic model. The second term of the tuple is the forward
+    *                 sampling probability, the third term is the backward sampling probability.
+    *                 The likelihood of the proposal is incorporated into the computation of the likelihood of the
+    *                 target distribution.
+    * @param target an additional factor in the likelihood of the target distribution
+    * @param burnIn the number of initial terms of the Markov chain to discard
+    * @param interval every `interval`-eth term of the Markov chain is kept
+    * @tparam A the concrete type of the probability model
+    * @return a random variable representing the Markov chain produced by the Metropolis-Hastings algorithm
+    */
+  def metropolisHastings[A, B](initial: Model[A], proposal: A => Model[(A, Double, Double)], target: A => Double,
+                               burnIn: Int, interval: Int): Stochastic[Stream[A]] = {
+    implicit val semifield = initial.semifield
+
+    pseudoMarginalMetropolisHastings(initial, proposal, (a: A) => Model.pure(a).weight(target), burnIn, interval)
+  }
+
+  /**
     * Builds a Markov chain according to the Metropolis algorithm (Metropolis algorithm with symmetric proposal).
+    *
+    * Note that the proposal should be symmetric!
+    *
+    * Beware, because of the non marginalized target likelihood, the algorithm may never converge.
+    *
+    * @param initial the first element of the Markov chain
+    * @param proposal the proposal distribution as a probabilistic model. The likelihood of the proposal is
+    *                 incorporated into the computation of the likelihood of the target distribution.
+    * @param target an additional factor in the likelihood of the target distribution
+    * @param burnIn the number of initial terms of the Markov chain to discard
+    * @param interval every `interval`-eth term of the Markov chain is kept
+    * @tparam A the concrete type of the probability model
+    * @return a random variable representing the Markov chain produced by the Metropolis algorithm
+    */
+  def pseudoMarginalMetropolis[A, B](initial: Model[A], proposal: A => Model[A], target: A => Model[B],
+                                  burnIn: Int, interval: Int): Stochastic[Stream[A]] = {
+
+    implicit val semifield = initial.semifield
+
+    pseudoMarginalMetropolisHastings(initial, (a: A) => proposal(a).map((_, semifield.unit, semifield.unit)), target,
+                                     burnIn, interval)
+  }
+
+  /**
+    * Builds a Markov chain according to the Metropolis algorithm (Metropolis algorithm with symmetric proposal).
+    *
+    * In this version, the likelihood is deterministic: there is no latent variable to be marginalized.
     *
     * Note that the proposal should be symmetric!
     *
