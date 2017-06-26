@@ -62,7 +62,12 @@ trait Metropolis {
       } yield weightedSample
     }
 
-    val weightedChainDist = prior(initial).markov(chainTransition)
+    val initialWithTarget: Model[A] = for {
+      initialValue <- initial
+      _ <- target(initialValue)
+    } yield initialValue
+
+    val weightedChainDist = prior(initialWithTarget).markov(chainTransition)
 
     weightedChainDist.map { weightedChain =>
       weightedChain.map(_._2).drop(burnIn).grouped(interval).map(_.head).toStream
@@ -93,7 +98,8 @@ trait Metropolis {
   }
 
   /**
-    * Builds a Markov chain according to the Metropolis algorithm (Metropolis algorithm with symmetric proposal).
+    * Builds a Markov chain according to the Metropolis algorithm (Metropolis-Hastings algorithm with symmetric
+    * proposal).
     *
     * Note that the proposal should be symmetric!
     *
@@ -118,7 +124,8 @@ trait Metropolis {
   }
 
   /**
-    * Builds a Markov chain according to the Metropolis algorithm (Metropolis algorithm with symmetric proposal).
+    * Builds a Markov chain according to the Metropolis algorithm (Metropolis-Hastings algorithm with symmetric
+    * proposal).
     *
     * In this version, the likelihood is deterministic: there is no latent variable to be marginalized.
     *
@@ -144,7 +151,7 @@ trait Metropolis {
     * Transforms a probabilistic model (prior + likelihood) into a Markov chain whose equilibrium state is the posterior
     * of the model.
     *
-    * If the model describes a prior `P(X)` and a likelihood `P(Y=y | X)`, then applying [metropolisFromPrior]
+    * If the model describes a prior `P(X)` and a likelihood `P(Y=y | X)`, then applying [metropolisHastingsFromPrior]
     * and sampling from it will return a stream whose equilibrium distribution is the posterior `P(X | Y=y)`.
     *
     * Beware, the metropolis algorithm (especially when the proposal is the prior as it is the case here) may not
@@ -156,7 +163,7 @@ trait Metropolis {
     * @tparam A the concrete type of the probability model
     * @return a random variable representing a Markov chain whose equilibrium state is the posterior of the model
     */
-  def metropolisFromPrior[A](model: Model[A], burnIn: Int, interval: Int): Stochastic[Stream[A]] = {
+  def metropolisHastingsFromPrior[A](model: Model[A], burnIn: Int, interval: Int): Stochastic[Stream[A]] = {
     implicit val semifield = model.semifield
     metropolis(model, (_: A) => model, (_: A) => semifield.unit, burnIn, interval)
   }

@@ -74,7 +74,7 @@ class MetropolisTest extends FlatSpec with Matchers {
 
   "Metropolis from prior" should "reach equilibrium" in {
     for(i <- 1 to 5) {
-      val chain: Stochastic[Stream[Double]] = metropolisFromPrior(abTestModel, 100, 10)
+      val chain: Stochastic[Stream[Double]] = metropolisHastingsFromPrior(abTestModel, 100, 10)
       chain.mean(10000).sample should be(0.35 +- 3e-3)
       chain.variance(10000).sample should be(0.010833333 +- 1e-3)
     }
